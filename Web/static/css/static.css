@@ -1,4 +1,11 @@
+html, body {
+    background-color: #080C1C;
+}
 h1 {
-    color: #43EA80;
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 70px;
     text-align: center;
+    background: linear-gradient(to right, #43EA80, #08F8D4);
+    background-clip: text;
+    color: transparent;
 }

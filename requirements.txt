@@ -1,6 +1,6 @@
 # pip install -r requirements.txt
-Flask
-Flask-SQLAlchemy
-Flask-Login
-Flask-Cors
-Werkzeug
+Flask==3.0.3
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+Flask-Cors==4.0.1
+Werkzeug==3.0.3
