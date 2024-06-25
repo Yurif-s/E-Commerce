@@ -3,9 +3,11 @@ from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 
+# definindo a instância do Flask
 app = Flask(__name__)
+# Configuração para usar SQLAlchemy usando SQLite
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecommerce.db'
-
+# Definindo a instância do objeto SQLAlchemy
 db = SQLAlchemy(app)
 
 # Modelagem
@@ -16,8 +18,11 @@ class Product(db.Model):
     price = db.Column(db.Float, nullable=False)
     description = db.Column(db.Text, nullable=True)
 
+# conexão com o banco de dados.
 with app.app_context():
+    #  cria as tabelas correspondentes no banco de dados
     db.create_all()
+    # executa as alterações acumuladas na sessão e aplicá-las ao banco de dados real
     db.session.commit()
 
 # Definir rota de adição de produto
