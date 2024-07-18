@@ -9,6 +9,31 @@ schemes:
 
 paths:
 
+  /register_user:
+    post:
+      summary: Register Users
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              username:
+                type: string
+              password:
+                type: string
+      responses:
+        200:
+          headers: 
+            Set-Cookie:
+              type: string
+
+          description: User added successfully
+
+        401:
+          description: Invalid user data
+
   /login:
     post:
       summary: Log in
