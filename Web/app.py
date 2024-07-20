@@ -3,14 +3,19 @@ from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from flask_cors import CORS
-from flask_login import UserMixin
+from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user
 
 # definindo a instância do Flask
 app = Flask(__name__)
 # Configuração para usar SQLAlchemy usando SQLite
+app.config['SECRET_KEY'] = '762a44e2-e5c4-4c7c-9d00-1c66f75ce221'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecommerce.db'
+# Criando a instância de login
+login_manager = LoginManager()
 # Definindo a instância do objeto SQLAlchemy
 db = SQLAlchemy(app)
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 CORS(app)
 
 # Modelagem
@@ -19,7 +24,6 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), nullable=False, unique=True)
     password = db.Column(db.String(80), nullable=True)
-
 
 # Produto (id, name, price, description)
 class Product(db.Model):
@@ -35,6 +39,10 @@ with app.app_context():
     # executa as alterações acumuladas na sessão e aplicá-las ao banco de dados real
     db.session.commit()
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
 @app.route('/register_user', methods=['POST'])
 def register_user():
     data = request.json
@@ -45,9 +53,28 @@ def register_user():
         return jsonify({'message': 'User added successfully'})
     return jsonify({'message': 'Invalid user data'}), 400
 
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+
+    user = User.query.filter_by(username=data.get('username')).first()
+
+    if user and data.get('password') == user.password:
+        login_user(user)
+        return jsonify({'message': 'Logged in successfully'})
+    
+    return jsonify({'message': ' Unauthorized. Invalid credentials'}), 401 # 
+
+@app.route('/logout', methods=['POST'])
+@login_required # Requer uma autenticação de usuário para ser executado, caso contrário terá um status code 405 (NOT ALLOWED)
+def logout():
+    logout_user()
+    return jsonify({'message': 'Logout successfully'})
+
 
 # Definir rota de adição de produto
 @app.route('/api/products/add', methods=['POST'])
+@login_required
 def add_product():
     data = request.json
     if 'name' in data and 'price' in data:
@@ -58,6 +85,7 @@ def add_product():
     return jsonify({'message': 'Invalid product data'}), 400
 
 @app.route('/api/products/delete/<int:product_id>', methods=['DELETE'])
+@login_required
 def delete_produto(product_id):
     product = Product.query.get(product_id)
     if product:
@@ -79,6 +107,7 @@ def get_product_details(product_id):
     return jsonify({'message': 'Product Not Found'}), 404
 
 @app.route('/api/products/update/<int:product_id>', methods=['PUT'])
+@login_required
 def update_product(product_id):
     product = Product.query.get(product_id)
     if not product:
